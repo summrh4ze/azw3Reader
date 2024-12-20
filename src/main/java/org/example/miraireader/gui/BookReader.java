@@ -4,17 +4,20 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
-import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.example.miraireader.core.Book;
 import org.example.miraireader.utils.ImageUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BookReader extends HBox {
     private static final int MIN_PIXELS = 10;
+    private static final Logger log = LoggerFactory.getLogger(BookReader.class);
     private final Book book;
     private final ImageView left;
     private final ImageView right;
@@ -23,9 +26,10 @@ public class BookReader extends HBox {
     private int currentPage = 0;
 
 
-    public BookReader(Node parent, String title, Book book) {
+    public BookReader(AnchorPane parent, Book book) {
         this.book = book;
-        this.placeholder = ImageUtils.generatePlaceholder();
+        Image page = book.getPage(0);
+        this.placeholder = ImageUtils.generatePlaceholder(page.getWidth(), page.getHeight());
         this.separateCover = book.getCoverIndex() > 0;
         this.currentPage = this.separateCover ? -1 : 0;
         Stage s = (Stage)parent.getScene().getWindow();
@@ -41,6 +45,11 @@ public class BookReader extends HBox {
         left.setFitHeight(height);
         left.setPreserveRatio(true);
         this.getChildren().addAll(this.left, this.right);
+
+        parent.heightProperty().addListener((_, _, newHeight) -> {
+            right.setFitHeight((double)newHeight);
+            left.setFitHeight((double)newHeight);
+        });
 
         if (book.leftToRight()) {
             right.setOnMouseClicked(this::next);

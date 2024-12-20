@@ -63,7 +63,7 @@ public class LibraryController {
 
         openBookTask.setOnSucceeded(event -> {
             Book book = openBookTask.getValue();
-            bookReader = new BookReader(bookContainer, book.getTitle(), book);
+            bookReader = new BookReader(bookContainer, book);
             bookContainer.getChildren().add(bookReader);
         });
 

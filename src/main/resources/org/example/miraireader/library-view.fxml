@@ -16,6 +16,6 @@
   </top>
 
   <center>
-    <AnchorPane fx:id="bookContainer"/>
+    <AnchorPane fx:id="bookContainer" minHeight="0" minWidth="0"/>
   </center>
 </BorderPane>
