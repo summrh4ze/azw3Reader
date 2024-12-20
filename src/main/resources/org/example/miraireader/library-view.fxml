@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<BorderPane fx:id="mainContainer" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.miraireader.gui.LibraryController">
+  <top>
+    <MenuBar>
+      <Menu text="File">
+        <MenuItem text="Open book" onAction="#onOpenBook"/>
+      </Menu>
+      <Menu text="Edit" />
+      <Menu text="View"/>
+    </MenuBar>
+  </top>
+
+  <center>
+    <AnchorPane fx:id="bookContainer"/>
+  </center>
+</BorderPane>
