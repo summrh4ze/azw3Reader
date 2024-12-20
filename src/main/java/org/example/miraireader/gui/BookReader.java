@@ -16,16 +16,18 @@ import org.example.miraireader.utils.ImageUtils;
 public class BookReader extends HBox {
     private static final int MIN_PIXELS = 10;
     private final Book book;
-    private final Node parent;
     private final ImageView left;
     private final ImageView right;
     private final Image placeholder;
+    private final boolean separateCover;
     private int currentPage = 0;
 
+
     public BookReader(Node parent, String title, Book book) {
-        this.parent = parent;
         this.book = book;
         this.placeholder = ImageUtils.generatePlaceholder();
+        this.separateCover = book.getCoverIndex() > 0;
+        this.currentPage = this.separateCover ? -1 : 0;
         Stage s = (Stage)parent.getScene().getWindow();
         String currentTitle = s.getTitle();
         String appTitle = currentTitle.split("-")[0].trim();
@@ -81,7 +83,7 @@ public class BookReader extends HBox {
     private void next(MouseEvent mouseEvent) {
         int pageCount = this.book.getPageCount();
         boolean canMoveNext = false;
-        if (this.currentPage == 0 && this.currentPage + 1 < pageCount) {
+        if (this.currentPage == -1 || (this.currentPage == 0 && this.currentPage + 1 < pageCount)) {
             this.currentPage += 1;
             canMoveNext = true;
         } else if (this.currentPage > 0 && this.currentPage + 2 < pageCount) {
@@ -90,6 +92,10 @@ public class BookReader extends HBox {
         }
         if (canMoveNext) {
             Image current = this.book.getPage(this.currentPage);
+            if (this.currentPage == 0) {
+                displayPages(current);
+                return;
+            }
             Image next = this.book.getPage(this.currentPage + 1);
             if ((current != null && !current.isError()) || (next != null && !next.isError())) {
                 displayPages(current, next);
@@ -100,10 +106,19 @@ public class BookReader extends HBox {
     }
 
     private void previous(MouseEvent mouseEvent) {
-        if (this.currentPage - 1 == 0) {
+        if (this.currentPage - 1 == -1 && this.separateCover) {
             this.currentPage -= 1;
             Image cover = this.book.getCover();
             displayPages(cover);
+        } else if (this.currentPage - 1 == 0) {
+            this.currentPage -= 1;
+            if (this.separateCover) {
+                Image current = this.book.getPage(this.currentPage);
+                displayPages(current);
+            } else {
+                Image cover = this.book.getCover();
+                displayPages(cover);
+            }
         } else if (this.currentPage - 1 > 0) {
             this.currentPage -= 2;
             Image current = this.book.getPage(this.currentPage);
