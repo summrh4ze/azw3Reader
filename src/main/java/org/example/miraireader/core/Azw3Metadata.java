@@ -61,9 +61,10 @@ public class Azw3Metadata {
             int fullNameOffset,
             int fullNameLength,
             int locale,
-            int firstImageIndex
-            //int firstContentIndex,
-            //int lastContentIndex
+            int firstImageIndex,
+            boolean hasEXTHHeader,
+            int firstContentIndex,
+            int lastContentIndex
     ){}
 
     public record EXTHRecord(
@@ -82,15 +83,18 @@ public class Azw3Metadata {
     private final PalmDatabaseHeader palmDatabaseHeader;
     private final PalmDocHeader palmDocHeader;
     private final MobiHeader mobiHeader;
+    private final EXTHHeader exthHeader;
 
     private Azw3Metadata(
             PalmDatabaseHeader palmDatabaseHeader,
             PalmDocHeader palmDocHeader,
-            MobiHeader mobiHeader
+            MobiHeader mobiHeader,
+            EXTHHeader exthHeader
     ) {
         this.palmDatabaseHeader = palmDatabaseHeader;
         this.palmDocHeader = palmDocHeader;
         this.mobiHeader = mobiHeader;
+        this.exthHeader = exthHeader;
     }
 
     public static Azw3Metadata of(File file) throws IOException {
@@ -99,8 +103,16 @@ public class Azw3Metadata {
             long zeroRecordOffset = Integer.toUnsignedLong(pdh.records().getFirst().offset);
             raf.seek(zeroRecordOffset);
             PalmDocHeader pdo = readPalmDocHeader(raf);
+            long mobiHeaderOffset = raf.getFilePointer();
             MobiHeader mobih = readMobiHeader(raf);
-            return new Azw3Metadata(pdh, pdo, mobih);
+            EXTHHeader exthh = null;
+            if(mobih.hasEXTHHeader()) {
+                long headerLen = Integer.toUnsignedLong(mobih.headerLen());
+                long exthHeaderOffset = mobiHeaderOffset + headerLen;
+                raf.seek(exthHeaderOffset);
+                exthh = readEXTHHeader(raf);
+            }
+            return new Azw3Metadata(pdh, pdo, mobih, exthh);
         } catch (IOException ex) {
             log.error(ex.getMessage());
             throw ex;
@@ -254,6 +266,16 @@ public class Azw3Metadata {
 
         int firstImageIndex = raf.readInt();
 
+        raf.skipBytes(16);
+
+        int exthFlags = raf.readInt();
+        boolean hasEXTHHeader = (exthFlags & 0x40) == 0x40;
+
+        raf.skipBytes(60);
+
+        int firstContentIndex = raf.readUnsignedShort();
+        int lastContentIndex = raf.readUnsignedShort();
+
         return new MobiHeader(
                 identifier,
                 headerLen,
@@ -263,8 +285,34 @@ public class Azw3Metadata {
                 fullNameOffset,
                 fullNameLen,
                 locale,
-                firstImageIndex
+                firstImageIndex,
+                hasEXTHHeader,
+                firstContentIndex,
+                lastContentIndex
         );
+    }
+
+    private static EXTHHeader readEXTHHeader(RandomAccessFile raf) throws IOException {
+        byte[] buf = new byte[4];
+        raf.readFully(buf);
+        String identifier = new String(buf, StandardCharsets.UTF_8);
+
+        int headerLen = raf.readInt();
+
+        int recordCount = raf.readInt();
+
+        List<EXTHRecord> records = new ArrayList<>(recordCount);
+
+        for (int i = 0; i < recordCount; i++) {
+            int recordType = raf.readInt();
+            int recordLen = raf.readInt();
+            int remainingLen = recordLen - 8;
+            byte[] recordData = new byte[remainingLen];
+            raf.readFully(recordData);
+            records.add(new EXTHRecord(recordType, recordLen, recordData));
+        }
+
+        return new EXTHHeader(identifier, headerLen, recordCount, records);
     }
 
     public PalmDatabaseHeader getPalmDatabaseHeader() {
@@ -277,5 +325,9 @@ public class Azw3Metadata {
 
     public MobiHeader getMobiHeader() {
         return mobiHeader;
+    }
+
+    public EXTHHeader getExthHeader() {
+        return exthHeader;
     }
 }

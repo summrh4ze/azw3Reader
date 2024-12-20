@@ -11,68 +11,105 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.example.miraireader.core.Book;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayInputStream;
+import org.example.miraireader.utils.ImageUtils;
 
 public class BookReader extends HBox {
-    private static final Logger log = LoggerFactory.getLogger(BookReader.class);
     private static final int MIN_PIXELS = 10;
     private final Book book;
     private final Node parent;
-    private int currentIndex = 0;
-
+    private final ImageView left;
+    private final ImageView right;
+    private final Image placeholder;
+    private int currentPage = 0;
 
     public BookReader(Node parent, String title, Book book) {
         this.parent = parent;
         this.book = book;
-        Stage s =(Stage)parent.getScene().getWindow();
+        this.placeholder = ImageUtils.generatePlaceholder();
+        Stage s = (Stage)parent.getScene().getWindow();
         String currentTitle = s.getTitle();
-        s.setTitle(currentTitle + " - " + this.book.getTitle());
-        displayPages();
-    }
+        String appTitle = currentTitle.split("-")[0].trim();
+        s.setTitle(appTitle + " - " + this.book.getTitle());
 
-    private ImageView getPage(int index) {
-        int height = (int)this.parent.getBoundsInParent().getHeight();
-        Image image = new Image(new ByteArrayInputStream(this.book.getPage(index)));
-        ImageView imageView = new ImageView(image);
-        imageView.setPreserveRatio(true);
-        imageView.setFitHeight(height);
-        return imageView;
-    }
+        int height = (int)parent.getBoundsInParent().getHeight();
+        this.right = new ImageView();
+        right.setFitHeight(height);
+        right.setPreserveRatio(true);
+        this.left = new ImageView();
+        left.setFitHeight(height);
+        left.setPreserveRatio(true);
+        this.getChildren().addAll(this.left, this.right);
 
-    private void displayPages() {
-        if (this.currentIndex == 0) {
-            ImageView imageView = getPage(this.currentIndex);
-            this.getChildren().add(imageView);
-
-            imageView.setOnMouseClicked(this::next);
-            this.getChildren().clear();
-            this.getChildren().add(imageView);
-            return;
+        if (book.leftToRight()) {
+            right.setOnMouseClicked(this::next);
+            left.setOnMouseClicked(this::previous);
+        } else {
+            right.setOnMouseClicked(this::previous);
+            left.setOnMouseClicked(this::next);
         }
-        // right-to-left TODO: handle left-to-right
-        ImageView right = getPage(currentIndex);
-        ImageView left = getPage(currentIndex + 1);
-        right.setOnMouseClicked(this::previous);
-        left.setOnMouseClicked(this::next);
+        displayPages(this.book.getCover());
+    }
 
-        setListeners(right);
-        setListeners(left);
+    private void displayPages(Image current) {
+        if (current == null || current.isError()) {
+            current = this.placeholder;
+        }
+        this.left.setImage(current);
+        this.right.setImage(placeholder);
+        //setListeners(left);
+        //setListeners(right);
+    }
 
-        this.getChildren().clear();
-        this.getChildren().addAll(left, right);
+    private void displayPages(Image current, Image next) {
+        if (current == null || current.isError()) {
+            current = this.placeholder;
+        }
+        if (next == null || current.isError()) {
+            next = this.placeholder;
+        }
+        if (book.leftToRight()) {
+            this.left.setImage(current);
+            this.right.setImage(next);
+        } else {
+            this.left.setImage(next);
+            this.right.setImage(current);
+        }
+        //setListeners(right);
+        //setListeners(left);
     }
 
     private void next(MouseEvent mouseEvent) {
-        this.currentIndex += 2;
-        displayPages();
+        int pageCount = this.book.getPageCount();
+        boolean canMoveNext = false;
+        if (this.currentPage == 0 && this.currentPage + 1 < pageCount) {
+            this.currentPage += 1;
+            canMoveNext = true;
+        } else if (this.currentPage > 0 && this.currentPage + 2 < pageCount) {
+            this.currentPage += 2;
+            canMoveNext = true;
+        }
+        if (canMoveNext) {
+            Image current = this.book.getPage(this.currentPage);
+            Image next = this.book.getPage(this.currentPage + 1);
+            if ((current != null && !current.isError()) || (next != null && !next.isError())) {
+                displayPages(current, next);
+            } else {
+                currentPage -= 2;
+            }
+        }
     }
 
     private void previous(MouseEvent mouseEvent) {
-        this.currentIndex -= 2;
-        displayPages();
+        if (this.currentPage - 1 == 0) {
+            this.currentPage -= 1;
+            Image cover = this.book.getCover();
+            displayPages(cover);
+        } else if (this.currentPage - 1 > 0) {
+            this.currentPage -= 2;
+            Image current = this.book.getPage(this.currentPage);
+            Image next = this.book.getPage(this.currentPage + 1);
+            displayPages(current, next);
+        }
     }
 
     private void setListeners(ImageView imageView) {
