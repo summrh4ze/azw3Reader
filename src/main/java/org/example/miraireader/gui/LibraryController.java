@@ -62,6 +62,7 @@ public class LibraryController {
         });
 
         openBookTask.setOnSucceeded(event -> {
+            bookContainer.getChildren().clear();
             Book book = openBookTask.getValue();
             bookReader = new BookReader(bookContainer, book);
             Region spacerBegin = new Region();
