@@ -22,7 +22,7 @@ public class BookReader extends HBox {
     private final ImageView right;
     private final Image placeholder;
     private final boolean separateCover;
-    private int currentPage = 0;
+    private int currentPage;
 
 
     public BookReader(HBox parent, Book book) {
@@ -61,31 +61,52 @@ public class BookReader extends HBox {
     }
 
     private void displayPages(Image current) {
-        if (current == null || current.isError()) {
-            current = this.placeholder;
+        if (current != null && !current.isError()) {
+            this.left.setImage(current);
+            setZoomListeners(left);
+        } else {
+            this.left.setImage(placeholder);
+            removeZoomListeners(this.left);
         }
-        this.left.setImage(current);
         this.right.setImage(placeholder);
-        //setListeners(left);
-        //setListeners(right);
+        removeZoomListeners(this.right);
     }
 
     private void displayPages(Image current, Image next) {
-        if (current == null || current.isError()) {
-            current = this.placeholder;
-        }
-        if (next == null || current.isError()) {
-            next = this.placeholder;
-        }
-        if (book.leftToRight()) {
-            this.left.setImage(current);
-            this.right.setImage(next);
+        if (current != null && !current.isError()) {
+            if (book.leftToRight()) {
+                this.left.setImage(current);
+                setZoomListeners(this.left);
+            } else {
+                this.right.setImage(current);
+                setZoomListeners(this.right);
+            }
         } else {
-            this.left.setImage(next);
-            this.right.setImage(current);
+            if (book.leftToRight()) {
+                this.left.setImage(this.placeholder);
+                removeZoomListeners(this.left);
+            } else {
+                this.right.setImage(this.placeholder);
+                removeZoomListeners(this.right);
+            }
         }
-        //setListeners(right);
-        //setListeners(left);
+        if (next != null && !next.isError()) {
+            if (book.leftToRight()) {
+                this.right.setImage(next);
+                setZoomListeners(this.right);
+            } else {
+                this.left.setImage(next);
+                setZoomListeners(this.left);
+            }
+        } else {
+            if (book.leftToRight()) {
+                this.right.setImage(this.placeholder);
+                removeZoomListeners(this.right);
+            } else {
+                this.left.setImage(this.placeholder);
+                removeZoomListeners(this.left);
+            }
+        }
     }
 
     private void next(MouseEvent mouseEvent) {
@@ -135,7 +156,14 @@ public class BookReader extends HBox {
         }
     }
 
-    private void setListeners(ImageView imageView) {
+    private void removeZoomListeners(ImageView imageView) {
+        imageView.setViewport(null);
+        imageView.setOnMousePressed(null);
+        imageView.setOnMouseDragged(null);
+        imageView.setOnScroll(null);
+    }
+
+    private void setZoomListeners(ImageView imageView) {
         double height = imageView.getImage().getHeight();
         double width = imageView.getImage().getWidth();
         imageView.setViewport(new Rectangle2D(0, 0, width, height));
