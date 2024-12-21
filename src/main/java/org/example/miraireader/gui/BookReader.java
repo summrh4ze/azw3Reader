@@ -7,7 +7,6 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 import org.example.miraireader.core.Book;
@@ -26,7 +25,7 @@ public class BookReader extends HBox {
     private int currentPage = 0;
 
 
-    public BookReader(AnchorPane parent, Book book) {
+    public BookReader(HBox parent, Book book) {
         this.book = book;
         Image page = book.getPage(0);
         this.placeholder = ImageUtils.generatePlaceholder(page.getWidth(), page.getHeight());

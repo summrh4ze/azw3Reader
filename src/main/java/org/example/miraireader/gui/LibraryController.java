@@ -22,7 +22,7 @@ public class LibraryController {
     protected BorderPane mainContainer;
 
     @FXML
-    protected AnchorPane bookContainer;
+    protected HBox bookContainer;
 
     protected BookReader bookReader;
 
@@ -64,7 +64,11 @@ public class LibraryController {
         openBookTask.setOnSucceeded(event -> {
             Book book = openBookTask.getValue();
             bookReader = new BookReader(bookContainer, book);
-            bookContainer.getChildren().add(bookReader);
+            Region spacerBegin = new Region();
+            Region spacerEnd = new Region();
+            HBox.setHgrow(spacerBegin, Priority.ALWAYS);
+            HBox.setHgrow(spacerEnd, Priority.ALWAYS);
+            bookContainer.getChildren().addAll(spacerBegin, bookReader, spacerEnd);
         });
 
         new Thread(openBookTask).start();
