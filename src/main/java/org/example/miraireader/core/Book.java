@@ -116,7 +116,7 @@ public class Book {
             return true; // if there is no direction defined use standard left to right
         }
         String writingMode = new String(record.get().recordData(), StandardCharsets.UTF_8);
-        return !writingMode.equals("rtl") && !writingMode.equals("horizontal-rtl");
+        return !writingMode.equals("rtl") && !writingMode.equals("horizontal-rl");
     }
 
     public int getCoverIndex() {

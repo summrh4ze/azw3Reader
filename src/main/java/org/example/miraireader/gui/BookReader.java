@@ -4,8 +4,10 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
@@ -15,13 +17,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BookReader extends HBox {
-    private static final int MIN_PIXELS = 10;
+    private static final int MIN_PIXELS = 100;
     private static final Logger log = LoggerFactory.getLogger(BookReader.class);
     private final Book book;
     private final ImageView left;
     private final ImageView right;
     private final Image placeholder;
     private final boolean separateCover;
+    private final ObjectProperty<Boolean> isShiftDown = new SimpleObjectProperty<>(false);
     private int currentPage;
 
 
@@ -51,12 +54,46 @@ public class BookReader extends HBox {
         });
 
         if (book.leftToRight()) {
-            right.setOnMouseClicked(this::next);
-            left.setOnMouseClicked(this::previous);
+            right.setOnMouseClicked(e -> {
+                if (!this.isShiftDown.get()) {
+                    this.next(e);
+                }
+            });
+            left.setOnMouseClicked(e -> {
+                if (!this.isShiftDown.get()) {
+                    this.previous(e);
+                }
+            });
         } else {
-            right.setOnMouseClicked(this::previous);
-            left.setOnMouseClicked(this::next);
+            right.setOnMouseClicked(e -> {
+                if (!this.isShiftDown.get()) {
+                    this.previous(e);
+                }
+            });
+            left.setOnMouseClicked(e -> {
+                if (!this.isShiftDown.get()) {
+                    this.next(e);
+                }
+            });
         }
+
+        parent.getScene().setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.SHIFT) {
+                isShiftDown.set(true);
+                this.right.setCursor(Cursor.CLOSED_HAND);
+                this.left.setCursor(Cursor.CLOSED_HAND);
+            }
+        });
+
+        parent.getScene().setOnKeyReleased(keyEvent -> {
+            if (keyEvent.getCode() == KeyCode.SHIFT) {
+                isShiftDown.set(false);
+                this.right.setCursor(Cursor.DEFAULT);
+                this.left.setCursor(Cursor.DEFAULT);
+            }
+        });
+
+
         displayPages(this.book.getCover());
     }
 
@@ -169,14 +206,18 @@ public class BookReader extends HBox {
         imageView.setViewport(new Rectangle2D(0, 0, width, height));
         ObjectProperty<Point2D> mouseDown = new SimpleObjectProperty<>();
         imageView.setOnMousePressed(e -> {
-            Point2D mousePress = ImageUtils.imageViewToImage(imageView, new Point2D(e.getX(), e.getY()));
-            mouseDown.set(mousePress);
+            if (isShiftDown.get()) {
+                Point2D mousePress = ImageUtils.imageViewToImage(imageView, new Point2D(e.getX(), e.getY()));
+                mouseDown.set(mousePress);
+            }
         });
 
         imageView.setOnMouseDragged(e -> {
-            Point2D dragPoint = ImageUtils.imageViewToImage(imageView, new Point2D(e.getX(), e.getY()));
-            ImageUtils.shift(imageView, dragPoint.subtract(mouseDown.get()));
-            mouseDown.set(ImageUtils.imageViewToImage(imageView, new Point2D(e.getX(), e.getY())));
+            if (isShiftDown.get()) {
+                Point2D dragPoint = ImageUtils.imageViewToImage(imageView, new Point2D(e.getX(), e.getY()));
+                ImageUtils.shift(imageView, dragPoint.subtract(mouseDown.get()));
+                mouseDown.set(ImageUtils.imageViewToImage(imageView, new Point2D(e.getX(), e.getY())));
+            }
         });
 
         imageView.setOnScroll(e -> {
