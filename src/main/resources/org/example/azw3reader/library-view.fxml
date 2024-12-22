@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <BorderPane fx:id="mainContainer" xmlns:fx="http://javafx.com/fxml"
-            fx:controller="org.example.miraireader.gui.LibraryController">
+            fx:controller="org.example.azw3reader.gui.LibraryController">
   <top>
     <MenuBar>
       <Menu text="File">

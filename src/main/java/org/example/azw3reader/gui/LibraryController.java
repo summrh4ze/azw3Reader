@@ -1,4 +1,4 @@
-package org.example.miraireader.gui;
+package org.example.azw3reader.gui;
 
 import javafx.animation.PauseTransition;
 import javafx.concurrent.Task;
@@ -8,8 +8,8 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Paint;
 import javafx.stage.FileChooser;
 import javafx.util.Duration;
-import org.example.miraireader.core.Azw3Metadata;
-import org.example.miraireader.core.Book;
+import org.example.azw3reader.core.Azw3Metadata;
+import org.example.azw3reader.core.Book;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

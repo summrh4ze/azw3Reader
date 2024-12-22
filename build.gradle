@@ -29,8 +29,8 @@ tasks.withType(JavaCompile) {
 }
 
 application {
-  mainModule = 'org.example.miraireader'
-  mainClass = 'org.example.miraireader.MiraiReaderApplication'
+  mainModule = 'org.example.azw3reader'
+  mainClass = 'org.example.azw3reader.Azw3ReaderApplication'
 }
 
 javafx {
@@ -39,10 +39,6 @@ javafx {
 }
 
 dependencies {
-  implementation 'net.coobird:thumbnailator:0.4.20'
-
-  implementation 'com.mortennobel:java-image-scaling:0.8.6'
-
   implementation("ch.qos.logback:logback-classic:${logbackVersion}")
   testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
   testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")

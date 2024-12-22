@@ -1,4 +1,4 @@
-package org.example.miraireader.gui;
+package org.example.azw3reader.gui;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -11,8 +11,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import org.example.miraireader.core.Book;
-import org.example.miraireader.utils.ImageUtils;
+import org.example.azw3reader.core.Book;
+import org.example.azw3reader.utils.ImageUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

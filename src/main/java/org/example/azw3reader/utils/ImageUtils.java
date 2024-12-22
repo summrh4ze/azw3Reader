@@ -1,4 +1,4 @@
-package org.example.miraireader.utils;
+package org.example.azw3reader.utils;
 
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;

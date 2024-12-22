@@ -1,4 +1,4 @@
-package org.example.miraireader.core;
+package org.example.azw3reader.core;
 
 import javafx.scene.image.Image;
 import org.slf4j.Logger;
